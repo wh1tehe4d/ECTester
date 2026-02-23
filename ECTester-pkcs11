@@ -1,0 +1,50 @@
+#!/usr/bin/bash
+
+if [ $# -eq 0 ] ; then
+  echo "Run $0 -h for help.";
+  exit 1
+fi
+
+LIBRARY_PATH=$1
+ECTESTER_ARGS=$3
+ECTESTER_HOME=$2
+
+while getopts "ht" OPTION; do
+  case $OPTION in
+    h)
+      echo "Usage:"
+      echo "$0 <libPath> <ECTester home> <ECTester options>                                         Default usage."
+      echo "$0 -h                                                                                   Tool usage hints."
+      echo "$0 -t <loggerPath> <logPath> <libPath> <ECTester home> <ECTester options without lib>   Debug mode."
+      exit 0
+      ;;
+    t)
+      export PKCS11_LOGGER_LIBRARY_PATH=$4
+      export PKCS11_LOGGER_LOG_FILE_PATH=$3
+      LIBRARY_PATH=$2
+      ECTESTER_HOME=$5
+      ECTESTER_ARGS=$6
+      ;;
+  esac
+done
+
+NAME=$(echo $LIBRARY_PATH | sed -E "s/.*\/([^/]*).so$/\1/")
+touch "$ECTESTER_HOME/tmp-pkcs11.cfg"
+echo "name = $NAME" > tmp-pkcs11.cfg
+echo "" >> tmp-pkcs11.cfg
+echo "library = $LIBRARY_PATH" >> tmp-pkcs11.cfg
+echo '
+attributes(generate, CKO_PRIVATE_KEY, *) = {
+  CKA_DERIVE = true
+  CKA_SIGN = true
+  CKA_SENSITIVE = false
+  CKA_EXTRACTABLE = true
+}
+
+attributes(generate, CKO_SECRET_KEY, *) = {
+  CKA_EXTRACTABLE = true
+  CKA_SENSITIVE = false
+}' >> tmp-pkcs11.cfg
+export PKCS11_CFG="$ECTESTER_HOME/tmp-pkcs11.cfg"
+java -jar "$ECTESTER_HOME/standalone/build/libs/ECTesterStandalone.jar" $ECTESTER_ARGS pkcs11
+rm "$ECTESTER_HOME/tmp-pkcs11.cfg"

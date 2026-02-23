@@ -14,7 +14,7 @@ public class PKCS11Lib extends ProviderECLibrary {
     public PKCS11Lib() {
         super("SunPKCS11", Security
                 .getProvider("SunPKCS11")
-                .configure(System.getenv("EC_TESTER_HOME") + "/pkcs11.cfg"));
+                .configure(System.getenv("PKCS11_CFG")));
     }
 
     @Override
