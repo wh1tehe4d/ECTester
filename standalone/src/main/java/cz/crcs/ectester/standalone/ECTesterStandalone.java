@@ -159,7 +159,8 @@ public class ECTesterStandalone {
             }
 
             List<ProviderECLibrary> libObjects = new LinkedList<>();
-            Class<?>[] libClasses = new Class[]{SunECLib.class,
+            Class<?>[] libClasses = new Class[]{
+                    /*SunECLib.class,
                     BouncyCastleLib.class,
                     TomcryptLib.class,
                     BotanLib.class,
@@ -172,7 +173,8 @@ public class ECTesterStandalone {
                     MbedTLSLib.class,
                     IppcpLib.class,
                     NettleLib.class,
-                    LibresslLib.class};
+                    LibresslLib.class*/
+                    PKCS11Lib.class};
             for (Class<?> c : libClasses) {
                 try {
                     libObjects.add((ProviderECLibrary) c.getDeclaredConstructor().newInstance());
