@@ -21,8 +21,14 @@ public class PKCS11Lib extends ProviderECLibrary {
     public boolean initialize() {
         boolean initialized = super.initialize();
         try {
-            KeyStore ks = KeyStore.getInstance("PKCS11");
-            ks.load(null, new char[] {'1', '2', '3','4', '5'});
+            KeyStore ks = KeyStore.getInstance("PKCS11", this.provider);
+            String[] pinS = System.getenv("PIN").split("");
+            char[] pin = new char[pinS.length];
+            for (int i = 0; i < pin.length; i++) {
+                pin[i] = pinS[i].charAt(0);
+            }
+            ks.load(null, pin);
+            // ks.load(null, new char[] {'1', '2', '3','4', '5'});
         } catch (Exception e) {
             System.err.println(e.getMessage());
             initialized = false;
