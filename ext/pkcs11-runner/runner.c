@@ -87,7 +87,7 @@ int main(int argc, void** argv) {
     if (loggerPath != NULL) {
         setenv("PKCS11_LOGGER_LIBRARY_PATH", libPath, 1);
         libPath = loggerPath;
-        setenv("PKCS11_LOGGER_LOG_PATH", logPath, 1);
+        setenv("PKCS11_LOGGER_LOG_FILE_PATH", logPath, 1);
     }
 
     size_t n = strlen(home);
