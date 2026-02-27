@@ -22,6 +22,3 @@
 [submodule "ext/mbedtls"]
 	path = ext/mbedtls
 	url = https://github.com/Mbed-TLS/mbedtls.git
-[submodule "ext/pkcs11-runner"]
-	path = ext/pkcs11-runner
-	url = https://github.com/wh1tehe4d/pkcs11-runner.git

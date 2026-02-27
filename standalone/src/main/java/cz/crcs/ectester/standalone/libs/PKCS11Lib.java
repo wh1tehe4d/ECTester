@@ -20,9 +20,12 @@ public class PKCS11Lib extends ProviderECLibrary {
     @Override
     public boolean initialize() {
         boolean initialized = super.initialize();
+        String PINenv = System.getenv("PIN");
+        if (PINenv == null) return initialized;
+
         try {
             KeyStore ks = KeyStore.getInstance("PKCS11", this.provider);
-            String[] pinS = System.getenv("PIN").split("");
+            String[] pinS = PINenv.split("");
             char[] pin = new char[pinS.length];
             for (int i = 0; i < pin.length; i++) {
                 pin[i] = pinS[i].charAt(0);
