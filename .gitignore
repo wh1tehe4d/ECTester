@@ -24,3 +24,6 @@ build_all
 result
 result-bin
 result-man
+
+# Ignore PKCS#11 logs
+pkcs11-resources/logs/*
