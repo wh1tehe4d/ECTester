@@ -11,29 +11,27 @@ import java.util.Set;
  */
 public abstract class GenericPKCS11Library extends ProviderECLibrary {
 
-    private boolean loginRequired;
 
     private char[] PIN;
 
-    public GenericPKCS11Library(String name, boolean loginRequired, String pkcs11ConfigPath, String PIN) {
+    public GenericPKCS11Library(String name, String pkcs11ConfigPath) {
+        this(name, pkcs11ConfigPath, null);
+    }
+
+    public GenericPKCS11Library(String name, String pkcs11ConfigPath, String PIN) {
         super(name, Security
                 .getProvider("SunPKCS11")
                 .configure(pkcs11ConfigPath));
 
-        this.loginRequired = loginRequired;
-        if (loginRequired) {
-            this.PIN = new char[PIN.length()];
-            String[] pinS = PIN.split("");
-            for (int i = 0; i < PIN.length(); i++) {
-                this.PIN[i] = pinS[i].charAt(0);
-            }
+        if (PIN != null) {
+            this.PIN = PIN.toCharArray();
         }
     }
 
     @Override
     public boolean initialize() {
         boolean initialized = super.initialize();
-        if (!initialized || !this.loginRequired) return initialized;
+        if (!initialized || this.PIN == null) return initialized;
 
         try {
             KeyStore ks = KeyStore.getInstance("PKCS11", this.provider);

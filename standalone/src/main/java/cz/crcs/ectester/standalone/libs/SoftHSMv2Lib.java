@@ -9,17 +9,16 @@ import java.util.Set;
  */
 public class SoftHSMv2Lib extends GenericPKCS11Library {
 
-    private SoftHSMBackend backend = SoftHSMBackend.OPENSSL;
+    private final SoftHSMBackend backend;
 
     public SoftHSMv2Lib() {
-        super("SoftHSMv2",
-                true,
-                "pkcs11-resources/SoftHSMv2.cfg",
-                System.getenv("PIN"));
+        this(SoftHSMBackend.OPENSSL);
     }
 
     public SoftHSMv2Lib(SoftHSMBackend backend) {
-        this();
+        super("SoftHSMv2",
+                "pkcs11-resources/SoftHSMv2.cfg",
+                System.getenv("PIN"));
         this.backend = backend;
     }
 

@@ -41,6 +41,8 @@ import cz.crcs.ectester.standalone.libs.jni.SignalException;
 import cz.crcs.ectester.standalone.libs.jni.TimeoutException;
 import cz.crcs.ectester.standalone.output.FileTestWriter;
 import cz.crcs.ectester.standalone.test.suites.*;
+import cz.crcs.ectester.standalone.util.PKCS11Config;
+import cz.crcs.ectester.standalone.util.PKCS11ConfigWriter;
 import org.apache.commons.cli.*;
 
 import javax.crypto.KeyAgreement;
@@ -163,6 +165,7 @@ public class ECTesterStandalone {
                     SunECLib.class,
                     BouncyCastleLib.class,
                     SoftHSMv2Lib.class,
+                    WolfPKCS11Lib.class,
                     TomcryptLib.class,
                     BotanLib.class,
                     CryptoppLib.class,
@@ -357,9 +360,14 @@ public class ECTesterStandalone {
         opts.addOption(Option.builder().longOpt("no-preload").desc("Do not use LD_PRELOAD.").build());
         opts.addOption(Option.builder().longOpt("pkcs11").desc("Run the specified action on the following PKCS#11 implementation.")
                 .numberOfArgs(2)
-                .argName("pkcs11ConfigPath;implementationName").valueSeparator(';')
+                .argName("implementationPath;implementationName").valueSeparator(';')
                 .build());
-        opts.addOption(Option.builder().longOpt("login").hasArg().argName("PIN").build());
+        opts.addOption(Option.builder().longOpt("pkcs11-login")
+                .desc("Specify the PIN used for the PKCS#11 implementation.")
+                .hasArg().argName("PIN").build());
+        opts.addOption(Option.builder().longOpt("pkcs11-cfg")
+                        .desc("Specify the SunPKCS11 config file. (ignores the first arg of --pkcs11)")
+                .hasArg().argName("configPath").build());
         return optParser.parse(opts, args);
     }
 
@@ -1130,9 +1138,22 @@ public class ECTesterStandalone {
                 }
             } else if (cli.hasOption("pkcs11")) {
                 String[] pkcs11Arguments = cli.getOptionValues("pkcs11");
-                selected = new PKCS11Lib(pkcs11Arguments != null ? (pkcs11Arguments.length > 1 ? pkcs11Arguments[1] : "") : "",
-                        pkcs11Arguments != null ? pkcs11Arguments[0] : System.getenv("PKCS11_CFG"),
-                        cli.hasOption("login") ? cli.getOptionValue("login", null) : System.getenv("PKCS11_PIN"));
+                String path;
+                if (!cli.hasOption("pkcs11-cfg")) {
+                    PKCS11Config config = PKCS11Config.defaultConfig(pkcs11Arguments[1], pkcs11Arguments[0]);
+                    if (!PKCS11ConfigWriter.write(config)) {
+                        System.err.println("Error creating the default SunPKCS11 config.");
+                        return false;
+                    }
+                    path = "pkcs11-resources/tmp_pkcs11.cfg";
+                } else {
+                    path = cli.getOptionValue("pkcs11-cfg");
+                }
+
+
+                selected = new PKCS11Lib(pkcs11Arguments[1],
+                        path,
+                        cli.hasOption("pkcs11-login") ? cli.getOptionValue("pkcs11-login") : System.getenv("PKCS11_PIN"));
                 try {
                     selected.initialize();
                 } catch (Exception ex) {

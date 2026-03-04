@@ -11,7 +11,7 @@ public class PKCS11Lib extends GenericPKCS11Library {
     }
 
     public PKCS11Lib(String name, String pkcs11ConfigPath, String pin) {
-        super((name.isEmpty() ? "" : name + " ") +"(PKCS11 implementation)", pin != null, pkcs11ConfigPath, pin);
+        super((name.isEmpty() ? "" : name + " ") +"(PKCS11 implementation)", pkcs11ConfigPath, pin);
     }
 
     @Override
