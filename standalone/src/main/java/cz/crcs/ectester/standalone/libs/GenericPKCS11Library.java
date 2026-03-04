@@ -19,6 +19,7 @@ public abstract class GenericPKCS11Library extends ProviderECLibrary {
         super(name, Security
                 .getProvider("SunPKCS11")
                 .configure(pkcs11ConfigPath));
+
         this.loginRequired = loginRequired;
         if (loginRequired) {
             this.PIN = new char[PIN.length()];
@@ -32,12 +33,11 @@ public abstract class GenericPKCS11Library extends ProviderECLibrary {
     @Override
     public boolean initialize() {
         boolean initialized = super.initialize();
-        if (!this.loginRequired) return initialized;
+        if (!initialized || !this.loginRequired) return initialized;
 
         try {
             KeyStore ks = KeyStore.getInstance("PKCS11", this.provider);
             ks.load(null, this.PIN);
-            // ks.load(null, new char[] {'1', '2', '3','4', '5'});
         } catch (Exception e) {
             System.err.println(e.getMessage());
             initialized = false;

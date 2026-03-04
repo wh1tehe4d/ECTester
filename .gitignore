@@ -27,3 +27,7 @@ result-man
 
 # Ignore PKCS#11 logs
 pkcs11-resources/logs/*
+pkcs11-resources/log
+
+# Ignore IDE stuff
+.idea/
