@@ -3,15 +3,20 @@ package cz.crcs.ectester.standalone.util;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Class representing the SunPKCS11 config.
+ *
+ * @author Filip Horvath
+ */
 public class PKCS11Config {
 
     private final String name;
 
     private final String implementationPath;
 
-    private final Map<CKO, Map<CKA, Boolean>> values;
+    private final Map<KeyObject, Map<CKA, Boolean>> values;
 
-    private PKCS11Config(String name, String implementationPath, Map<CKO, Map<CKA, Boolean>> values) {
+    private PKCS11Config(String name, String implementationPath, Map<KeyObject, Map<CKA, Boolean>> values) {
         this.name = name;
         this.implementationPath = implementationPath;
         this.values = values.entrySet().stream()
@@ -22,16 +27,16 @@ public class PKCS11Config {
         return PKCS11Config.builder()
                 .name(name)
                 .implementationPath(implementationPath)
-                .attribute(CKO.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_DERIVE, true)
-                .attribute(CKO.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_SIGN, true)
-                .attribute(CKO.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_EXTRACTABLE, true)
-                .attribute(CKO.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_SENSITIVE, false)
-                .attribute(CKO.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_TOKEN, true)
-                .attribute(CKO.GENERATE_CKO_PUBLIC_KEY, CKA.CKA_DERIVE, true)
-                .attribute(CKO.GENERATE_CKO_PUBLIC_KEY, CKA.CKA_VERIFY, true)
-                .attribute(CKO.GENERATE_CKO_PUBLIC_KEY, CKA.CKA_TOKEN, true)
-                .attribute(CKO.GENERATE_CKO_SECRET_KEY, CKA.CKA_EXTRACTABLE, true)
-                .attribute(CKO.GENERATE_CKO_SECRET_KEY, CKA.CKA_SENSITIVE, false)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_DERIVE, true)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_SIGN, true)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_EXTRACTABLE, true)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_SENSITIVE, false)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_TOKEN, true)
+                .attribute(KeyObject.GENERATE_CKO_PUBLIC_KEY, CKA.CKA_DERIVE, true)
+                .attribute(KeyObject.GENERATE_CKO_PUBLIC_KEY, CKA.CKA_VERIFY, true)
+                .attribute(KeyObject.GENERATE_CKO_PUBLIC_KEY, CKA.CKA_TOKEN, true)
+                .attribute(KeyObject.GENERATE_CKO_SECRET_KEY, CKA.CKA_EXTRACTABLE, true)
+                .attribute(KeyObject.GENERATE_CKO_SECRET_KEY, CKA.CKA_SENSITIVE, false)
                 .build();
     }
 
@@ -43,7 +48,7 @@ public class PKCS11Config {
         StringBuilder result = new StringBuilder();
         result.append("name = ").append(this.name).append(System.lineSeparator());
         result.append("library = ").append(this.implementationPath).append(System.lineSeparator());
-        for (Map.Entry<CKO, Map<CKA, Boolean>> entry : this.values.entrySet()) {
+        for (Map.Entry<KeyObject, Map<CKA, Boolean>> entry : this.values.entrySet()) {
             result.append(entry.getKey().header());
             for (Map.Entry<CKA, Boolean> att : entry.getValue().entrySet()) {
                 result.append(String.format("  %s = %s" + System.lineSeparator(), att.getKey(), att.getValue()));
@@ -54,7 +59,7 @@ public class PKCS11Config {
         return result.toString();
     }
 
-    public enum CKO {
+    public enum KeyObject {
         GENERATE_CKO_PUBLIC_KEY,
         GENERATE_CKO_PRIVATE_KEY,
         GENERATE_CKO_SECRET_KEY,
@@ -95,7 +100,7 @@ public class PKCS11Config {
 
         private String implementationPath;
 
-        private Map<CKO, Map<CKA, Boolean>> values = new HashMap<>();
+        private Map<KeyObject, Map<CKA, Boolean>> values = new HashMap<>();
 
         private Builder() {}
 
@@ -109,7 +114,7 @@ public class PKCS11Config {
             return this;
         }
 
-        public Builder attribute(CKO cko, CKA cka, boolean value) {
+        public Builder attribute(KeyObject cko, CKA cka, boolean value) {
             Map<CKA, Boolean> values = this.values.getOrDefault(cko, new HashMap<>());
             values.put(cka, value);
             this.values.putIfAbsent(cko, values);

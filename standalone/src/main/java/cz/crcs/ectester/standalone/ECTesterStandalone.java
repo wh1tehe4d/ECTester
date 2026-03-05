@@ -1138,21 +1138,21 @@ public class ECTesterStandalone {
                 }
             } else if (cli.hasOption("pkcs11")) {
                 String[] pkcs11Arguments = cli.getOptionValues("pkcs11");
-                String path;
+                String configPath;
                 if (!cli.hasOption("pkcs11-cfg")) {
                     PKCS11Config config = PKCS11Config.defaultConfig(pkcs11Arguments[1], pkcs11Arguments[0]);
                     if (!PKCS11ConfigWriter.write(config)) {
                         System.err.println("Error creating the default SunPKCS11 config.");
                         return false;
                     }
-                    path = "pkcs11-resources/tmp_pkcs11.cfg";
+                    configPath = "pkcs11-resources/tmp_pkcs11.cfg";
                 } else {
-                    path = cli.getOptionValue("pkcs11-cfg");
+                    configPath = cli.getOptionValue("pkcs11-cfg");
                 }
 
 
                 selected = new PKCS11Lib(pkcs11Arguments[1],
-                        path,
+                        configPath,
                         cli.hasOption("pkcs11-login") ? cli.getOptionValue("pkcs11-login") : System.getenv("PKCS11_PIN"));
                 try {
                     selected.initialize();
