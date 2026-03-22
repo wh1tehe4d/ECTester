@@ -164,7 +164,8 @@ public class ECTesterStandalone {
             Class<?>[] libClasses = new Class[]{
                     SunECLib.class,
                     BouncyCastleLib.class,
-                    SoftHSMv2Lib.class,
+                    SoftHSMv2LibOPENSSL.class,
+                    // SoftHSMv2LibBOTAN.class,
                     WolfPKCS11Lib.class,
                     TomcryptLib.class,
                     BotanLib.class,
@@ -1145,7 +1146,7 @@ public class ECTesterStandalone {
                         System.err.println("Error creating the default SunPKCS11 config.");
                         return false;
                     }
-                    configPath = "pkcs11-resources/tmp_pkcs11.cfg";
+                    configPath = PKCS11ConfigWriter.defaultPath;
                 } else {
                     configPath = cli.getOptionValue("pkcs11-cfg");
                 }

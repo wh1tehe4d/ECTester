@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class PKCS11ConfigWriter {
 
-    private static final String defaultPath = "pkcs11-resources/tmp_pkcs11.cfg";
+    public static final String defaultPath = "standalone/src/main/resources/cz/crcs/ectester/standalone/libs/pkcs11/tmp_pkcs11.cfg";
 
     public static boolean write(PKCS11Config config) {
         return PKCS11ConfigWriter.write(config, PKCS11ConfigWriter.defaultPath);

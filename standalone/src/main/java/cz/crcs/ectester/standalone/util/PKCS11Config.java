@@ -1,5 +1,7 @@
 package cz.crcs.ectester.standalone.util;
 
+import cz.crcs.ectester.standalone.libs.SoftHSMv2Lib;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,6 +25,10 @@ public class PKCS11Config {
                 .collect(Collectors.toMap(Map.Entry::getKey, (ckoMapEntry -> new HashMap<>(ckoMapEntry.getValue()))));
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static PKCS11Config defaultConfig(String name, String implementationPath) {
         return PKCS11Config.builder()
                 .name(name)
@@ -40,8 +46,43 @@ public class PKCS11Config {
                 .build();
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static PKCS11Config SoftHSMv2Config(SoftHSMv2Lib.Backend backend) {
+        return PKCS11Config.builder()
+                .name(String.format("SoftHSMv2-%s", backend))
+                .implementationPath(
+                        String.format("%s/standalone/src/main/resources/cz/crcs/ectester/standalone/libs/pkcs11/SoftHSMv2/SoftHSMv2-%s/libsofthsm2.so",
+                            System.getenv("ECTESTER_HOME") != null ? System.getenv("ECTESTER_HOME") : System.getenv("PWD"),
+                                backend)
+                )
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_DERIVE, true)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_SIGN, true)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_EXTRACTABLE, true)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_SENSITIVE, false)
+                .attribute(KeyObject.GENERATE_CKO_SECRET_KEY, CKA.CKA_EXTRACTABLE, true)
+                .attribute(KeyObject.GENERATE_CKO_SECRET_KEY, CKA.CKA_SENSITIVE, false)
+                .build();
+    }
+
+    public static PKCS11Config wolfPKCS11Config() {
+        return PKCS11Config.builder()
+                .name("wolfPKCS11")
+                .implementationPath(
+                        String.format("%s/standalone/src/main/resources/cz/crcs/ectester/standalone/libs/pkcs11/wolfPKCS11/libwolfpkcs11.so",
+                                System.getenv("ECTESTER_HOME") != null ? System.getenv("ECTESTER_HOME") : System.getenv("PWD"))
+                )
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_DERIVE, true)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_SIGN, true)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_EXTRACTABLE, true)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_SENSITIVE, false)
+                .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_TOKEN, true)
+                .attribute(KeyObject.GENERATE_CKO_PUBLIC_KEY, CKA.CKA_TOKEN, true)
+                .attribute(KeyObject.GENERATE_CKO_SECRET_KEY, CKA.CKA_EXTRACTABLE, true)
+                .attribute(KeyObject.GENERATE_CKO_SECRET_KEY, CKA.CKA_SENSITIVE, false)
+                .build();
+    }
+
+    public static PKCS11Config LoggerConfig(String libName) {
+        return PKCS11Config.defaultConfig(libName, System.getenv("PKCS11_LOGGER_PATH"));
     }
 
     public String export() {
