@@ -2,7 +2,8 @@
   description = "ECTester";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     gradle2nix.url = "github:tadfisher/gradle2nix/03c1b713ad139eb6dfc8d463b5bd348368125cf1";
     custom-nixpkgs.url = "github:quapka/nixpkgs/customPkgs";
@@ -12,6 +13,7 @@
     {
       self,
       nixpkgs,
+      nixpkgs-unstable,
       custom-nixpkgs,
       flake-utils,
       gradle2nix,
@@ -22,6 +24,7 @@
       let
         overlays = [ ];
         pkgs = import nixpkgs { inherit system overlays; };
+        unstablePkgs = import nixpkgs-unstable { inherit system overlays; };
         customPkgs = import custom-nixpkgs { inherit system overlays; };
 
         # removes the patch/revision from the version. E.g. getMajorMinor "1.2.3" = "1.2"
@@ -569,6 +572,53 @@
 
         commonLibs = import ./nix/commonlibs.nix { pkgs = pkgs; };
 
+        softhsmBuilder = { }:
+          let
+            ECTester = buildECTesterStandalone { };
+          in
+          with pkgs; writeShellApplication {
+            name = "ECTesterStandalone";
+
+            runtimeInputs = [
+              unstablePkgs.softhsm
+            ];
+
+            text = ''
+              #!${pkgs.runtimeShell}
+              SOFTHSM2_TEMPDIR=$(mktemp --directory)
+              SOFTHSM2_CONF="$SOFTHSM2_TEMPDIR"/softhsm2.conf
+              SOFTHSM2_LIB="${unstablePkgs.softhsm}/lib/softhsm/libsofthsm2.so"
+              PIN=1234
+
+              export SOFTHSM2_CONF SOFTHSM2_LIB PIN
+
+              cat <<EOF > "$SOFTHSM2_TEMPDIR"/softhsm2.conf
+              directories.tokendir = $SOFTHSM2_TEMPDIR/tokens
+              objectstore.backend = file
+              objectstore.umask = 0077
+
+              # ERROR, WARNING, INFO, DEBUG
+              log.level = ERROR
+
+              # If CKF_REMOVABLE_DEVICE flag should be set
+              slots.removable = false
+
+              # Enable and disable PKCS#11 mechanisms using slots.mechanisms.
+              slots.mechanisms = ALL
+
+              # If the library should reset the state on fork
+              library.reset_on_fork = false
+              EOF
+
+              mkdir --parents "$SOFTHSM2_TEMPDIR"/tokens
+              softhsm2-util --init-token --slot 0 --label "ECTester" --pin "$PIN" --so-pin "$PIN" > /dev/null
+
+              ${ECTester.outPath}/bin/ECTesterStandalone "$@"
+              rm --recursive --force "$SOFTHSM2_TEMPDIR"
+            '';
+        };
+
+
         buildECTesterStandalone =
           {
             tomcrypt ? {
@@ -840,6 +890,7 @@
             libName = "libressl";
             function = buildECTesterStandalone;
           };
+          softhsm = softhsmBuilder { };
 
           reader = buildReader { };
           common = buildCommon { };

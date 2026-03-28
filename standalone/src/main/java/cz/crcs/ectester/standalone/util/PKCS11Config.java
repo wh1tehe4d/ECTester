@@ -50,6 +50,7 @@ public class PKCS11Config {
         return PKCS11Config.builder()
                 .name(String.format("SoftHSMv2-%s", backend))
                 .implementationPath(
+                    System.getenv("SOFTHSM2_LIB") != null ? System.getenv("SOFTHSM2_LIB") :
                         String.format("%s/standalone/src/main/resources/cz/crcs/ectester/standalone/libs/pkcs11/SoftHSMv2/SoftHSMv2-%s/libsofthsm2.so",
                             System.getenv("ECTESTER_HOME") != null ? System.getenv("ECTESTER_HOME") : System.getenv("PWD"),
                                 backend)
