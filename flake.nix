@@ -572,52 +572,10 @@
 
         commonLibs = import ./nix/commonlibs.nix { pkgs = pkgs; };
 
-        softhsmBuilder = { }:
-          let
-            ECTester = buildECTesterStandalone { };
-          in
-          with pkgs; writeShellApplication {
-            name = "ECTesterStandalone";
-
-            runtimeInputs = [
-              unstablePkgs.softhsm
-            ];
-
-            text = ''
-              #!${pkgs.runtimeShell}
-              SOFTHSM2_TEMPDIR=$(mktemp --directory)
-              SOFTHSM2_CONF="$SOFTHSM2_TEMPDIR"/softhsm2.conf
-              SOFTHSM2_LIB="${unstablePkgs.softhsm}/lib/softhsm/libsofthsm2.so"
-              PIN=1234
-
-              export SOFTHSM2_CONF SOFTHSM2_LIB PIN
-
-              cat <<EOF > "$SOFTHSM2_TEMPDIR"/softhsm2.conf
-              directories.tokendir = $SOFTHSM2_TEMPDIR/tokens
-              objectstore.backend = file
-              objectstore.umask = 0077
-
-              # ERROR, WARNING, INFO, DEBUG
-              log.level = ERROR
-
-              # If CKF_REMOVABLE_DEVICE flag should be set
-              slots.removable = false
-
-              # Enable and disable PKCS#11 mechanisms using slots.mechanisms.
-              slots.mechanisms = ALL
-
-              # If the library should reset the state on fork
-              library.reset_on_fork = false
-              EOF
-
-              mkdir --parents "$SOFTHSM2_TEMPDIR"/tokens
-              softhsm2-util --init-token --slot 0 --label "ECTester" --pin "$PIN" --so-pin "$PIN" > /dev/null
-
-              ${ECTester.outPath}/bin/ECTesterStandalone "$@"
-              rm --recursive --force "$SOFTHSM2_TEMPDIR"
-            '';
+        softhsmBuilder = { }: pkgs.callPackage ./nix/softhsm2 {
+          softhsm = unstablePkgs.softhsm;
+          ectester = buildECTesterStandalone { };
         };
-
 
         buildECTesterStandalone =
           {
