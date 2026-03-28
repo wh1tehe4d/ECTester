@@ -1,4 +1,4 @@
-    package cz.crcs.ectester.standalone.libs;
+package cz.crcs.ectester.standalone.libs;
 
 import java.security.KeyStore;
 import java.security.Security;
