@@ -1,21 +1,54 @@
 {
+  lib,
   runtimeShell,
   writeShellApplication,
 
   softhsm,
   ectester,
+
+  botan3,
+  openssl,
+  sqlite,
+
+  backend ? "openssl",
 }:
+let
+  softhsmPkg = softhsm.overrideAttrs (prev: rec {
+
+    buildInputs = if backend == "openssl" then
+      [ openssl sqlite ]
+    else
+      throw ''
+        Unless botan3 is supported by SoftHSMv2, see https://github.com/softhsm/SoftHSMv2/issues/792
+        the only supported backend is 'openssl'.
+      ''
+      [ botan3 sqlite ]
+    ;
+
+    sansBackendConfigureFlags = builtins.filter (
+      f: !( (lib.hasPrefix "--with-crypto" f) || (lib.hasPrefix "--with-openssl" f))
+    ) prev.configureFlags;
+
+    configureFlags = if backend == "openssl" then prev.configureFlags
+    else
+    sansBackendConfigureFlags ++ [
+      "--with-crypto-backend=botan"
+      "--with-botan=${lib.getDev botan3}/include/botan-3/botan"
+    ];
+
+  });
+in
 writeShellApplication {
   name = "ECTesterStandalone";
 
   runtimeInputs = [
-    softhsm
+    softhsmPkg
   ];
 
   text = ''
     SOFTHSM2_TEMPDIR=$(mktemp --directory)
     SOFTHSM2_CONF="$SOFTHSM2_TEMPDIR"/softhsm2.conf
-    SOFTHSM2_LIB="${softhsm}/lib/softhsm/libsofthsm2.so"
+    SOFTHSM2_LIB="${softhsmPkg}/lib/softhsm/libsofthsm2.so"
     PIN=1234
 
     export SOFTHSM2_CONF SOFTHSM2_LIB PIN
