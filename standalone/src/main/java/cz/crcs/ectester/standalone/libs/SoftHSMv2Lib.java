@@ -3,7 +3,6 @@ package cz.crcs.ectester.standalone.libs;
 import cz.crcs.ectester.standalone.util.PKCS11Config;
 import cz.crcs.ectester.standalone.util.PKCS11ConfigWriter;
 
-import java.util.Set;
 
 /**
  * Class representing the SoftHSMv2 library.
@@ -26,15 +25,6 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
     public boolean initialize() {
         PKCS11ConfigWriter.write(PKCS11Config.SoftHSMv2Config(this.backend), this.providerConfigPath);
         return super.initialize();
-    }
-
-    @Override
-    public Set<String> getCurves() {
-        // TODO add the curves based on lib documentation
-        return switch(this.backend) {
-            case OPENSSL -> Set.of();
-            case BOTAN -> Set.of();
-        };
     }
 
     public enum Backend {

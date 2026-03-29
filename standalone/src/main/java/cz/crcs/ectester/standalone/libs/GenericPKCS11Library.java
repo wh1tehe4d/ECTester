@@ -2,7 +2,18 @@ package cz.crcs.ectester.standalone.libs;
 
 import java.security.KeyStore;
 import java.security.Security;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.ProviderException;
+import java.security.InvalidAlgorithmParameterException;
+
+import java.security.spec.ECGenParameterSpec;
+
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.Enumeration;
+
+import org.bouncycastle.jce.ECNamedCurveTable;
 
 /**
  * Class for representing a generic PKCS11 implementation, configured by a HW or a SW PKCS11 module.
@@ -46,5 +57,20 @@ public abstract class GenericPKCS11Library extends ProviderECLibrary {
         }
 
         return initialized;
+    }
+
+    @Override
+    public Set<String> getCurves() {
+        Set<String> result = new TreeSet<>();
+        Enumeration<?> names = ECNamedCurveTable.getNames();
+        while (names.hasMoreElements()) {
+            String name = (String) names.nextElement();
+            try {
+                KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC", this.provider);
+                kpg.initialize(new ECGenParameterSpec(name));
+                result.add(name);
+            } catch (InvalidAlgorithmParameterException | ProviderException | NoSuchAlgorithmException e) { }
+        }
+        return result;
     }
 }
