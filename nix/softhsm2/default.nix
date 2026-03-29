@@ -13,37 +13,41 @@
   backend ? "openssl",
 }:
 let
-  softhsmPkg = softhsm.overrideAttrs (prev: rec {
-
-    buildInputs = if backend == "openssl" then
-      [ openssl sqlite ]
+  checkedBackend =
+    if builtins.elem backend [ "openssl" ] then
+      backend
     else
       throw ''
         Unless botan3 is supported by SoftHSMv2, see https://github.com/softhsm/SoftHSMv2/issues/792
         the only supported backend is 'openssl'.
-      ''
-      [ botan3 sqlite ]
-    ;
+      '';
+  softhsmPkg =
+    if checkedBackend == "openssl" then
+      softhsm
+    else if checkedBackend == "botan" then
+      softhsm.overrideAttrs (prev: rec {
 
-    sansBackendConfigureFlags = builtins.filter (
-      f: !( (lib.hasPrefix "--with-crypto" f) || (lib.hasPrefix "--with-openssl" f))
-    ) prev.configureFlags;
+        buildInputs = [
+          botan3
+          sqlite
+        ];
 
-    configureFlags = if backend == "openssl" then prev.configureFlags
+        sansBackendConfigureFlags = builtins.filter (
+          f: !((lib.hasPrefix "--with-crypto" f) || (lib.hasPrefix "--with-openssl" f))
+        ) prev.configureFlags;
+
+        configureFlags = sansBackendConfigureFlags ++ [
+          "--with-crypto-backend=botan"
+          "--with-botan=${lib.getDev botan3}"
+        ];
+      })
     else
-    sansBackendConfigureFlags ++ [
-      "--with-crypto-backend=botan"
-      "--with-botan=${lib.getDev botan3}/include/botan-3/botan"
-    ];
-
-  });
+      throw "The only supported values for backend are 'openssl' or 'botan'.";
 in
 writeShellApplication {
   name = "ECTesterStandalone";
 
-  runtimeInputs = [
-    softhsmPkg
-  ];
+  runtimeInputs = [ softhsmPkg ];
 
   text = ''
     SOFTHSM2_TEMPDIR=$(mktemp --directory)
