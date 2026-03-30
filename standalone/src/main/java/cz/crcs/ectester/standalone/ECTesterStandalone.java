@@ -1146,7 +1146,7 @@ public class ECTesterStandalone {
                         System.err.println("Error creating the default SunPKCS11 config.");
                         return false;
                     }
-                    configPath = PKCS11ConfigWriter.defaultPath;
+                    configPath = PKCS11ConfigWriter.configPath;
                 } else {
                     configPath = cli.getOptionValue("pkcs11-cfg");
                 }

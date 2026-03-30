@@ -32,10 +32,29 @@ public abstract class GenericPKCS11Library extends ProviderECLibrary {
 
     public GenericPKCS11Library(String name, String providerConfigPath, String PIN) {
         super(name, Security.getProvider("SunPKCS11"));
-        this.providerConfigPath = providerConfigPath;
-        if (PIN != null) {
-            this.PIN = PIN.toCharArray();
-        } else this.PIN = null;
+
+        // if providerConfigPath is null, try to resolve to default config
+        // based on the name, taking into account the backends of SoftHSMv2 if
+        // none are found raise
+        if ( providerConfigPath != null ) {
+            this.providerConfigPath = providerConfigPath;
+        } else {
+            String defaultPath = null;
+            if ( name.startsWith("SoftHSMv2-") )  {
+                defaultPath = String.format("cz/crcs/ectester/standalone/libs/pkcs11/SoftHSMv2/%s/%s.cfg", name, name);
+            } else {
+                defaultPath = String.format("cz/crcs/ectester/standalone/libs/pkcs11/%s/%s.cfg", name, name);
+            }
+            String resourcePath = this.getClass().getClassLoader().getResource(defaultPath).getPath();
+            if ( resourcePath == null ) {
+                throw new IllegalArgumentException(
+                    String.format("Could not resolve path to the configuration for '%s' PKCS11 module", name)
+                );
+            }
+            this.providerConfigPath = resourcePath;
+        }
+        System.out.println(this.providerConfigPath);
+        this.PIN = PIN != null ? PIN.toCharArray() : null;
     }
 
     @Override

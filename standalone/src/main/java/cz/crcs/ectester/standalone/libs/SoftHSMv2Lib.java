@@ -1,5 +1,7 @@
 package cz.crcs.ectester.standalone.libs;
 
+import java.nio.file.Path;
+
 import cz.crcs.ectester.standalone.util.PKCS11Config;
 import cz.crcs.ectester.standalone.util.PKCS11ConfigWriter;
 
@@ -14,10 +16,7 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
     private final Backend backend;
 
     public SoftHSMv2Lib(Backend backend) {
-        super("SoftHSMv2-" + backend,
-                String.format("standalone/src/main/resources/cz/crcs/ectester/standalone/libs/pkcs11/SoftHSMv2/SoftHSMv2-%s/SoftHSMv2-%s.cfg",
-                        backend, backend),
-                System.getenv("PIN"));
+        super("SoftHSMv2-" + backend, System.getenv("SOFTHSM2_CONF"), System.getenv("PIN"));
         this.backend = backend;
     }
 
