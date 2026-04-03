@@ -1,7 +1,5 @@
 package cz.crcs.ectester.standalone.libs;
 
-import java.util.Set;
-
 public class PKCS11Lib extends GenericPKCS11Library {
 
     public PKCS11Lib() {
@@ -10,12 +8,8 @@ public class PKCS11Lib extends GenericPKCS11Library {
                 System.getenv("PIN"));
     }
 
-    public PKCS11Lib(String name, String pkcs11ConfigPath, String pin) {
-        super((name.isEmpty() ? "" : name + " ") +"(PKCS11 implementation)", pkcs11ConfigPath, pin);
-    }
-
-    @Override
-    public Set<String> getCurves() {
-        return Set.of();
+    public PKCS11Lib(String name, String providerConfigPath, String pin) {
+        super((name.isEmpty() ? "" : name + " ") +"(PKCS11 implementation)", pin);
+        this.setProviderConfigPath(providerConfigPath);
     }
 }

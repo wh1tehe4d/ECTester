@@ -1,6 +1,7 @@
 package cz.crcs.ectester.standalone.util;
 
 import cz.crcs.ectester.standalone.libs.SoftHSMv2Lib;
+import cz.crcs.ectester.standalone.libs.WolfPKCS11Lib;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,12 +50,7 @@ public class PKCS11Config {
     public static PKCS11Config SoftHSMv2Config(SoftHSMv2Lib.Backend backend) {
         return PKCS11Config.builder()
                 .name(String.format("SoftHSMv2-%s", backend))
-                .implementationPath(
-                    System.getenv("SOFTHSM2_LIB") != null ? System.getenv("SOFTHSM2_LIB") :
-                        String.format("%s/standalone/src/main/resources/cz/crcs/ectester/standalone/libs/pkcs11/SoftHSMv2/SoftHSMv2-%s/libsofthsm2.so",
-                            System.getenv("ECTESTER_HOME") != null ? System.getenv("ECTESTER_HOME") : System.getenv("PWD"),
-                                backend)
-                )
+                .implementationPath(SoftHSMv2Lib.getResource(backend))
                 .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_DERIVE, true)
                 .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_SIGN, true)
                 .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_EXTRACTABLE, true)
@@ -67,10 +63,7 @@ public class PKCS11Config {
     public static PKCS11Config wolfPKCS11Config() {
         return PKCS11Config.builder()
                 .name("wolfPKCS11")
-                .implementationPath(
-                        String.format("%s/standalone/src/main/resources/cz/crcs/ectester/standalone/libs/pkcs11/wolfPKCS11/libwolfpkcs11.so",
-                                System.getenv("ECTESTER_HOME") != null ? System.getenv("ECTESTER_HOME") : System.getenv("PWD"))
-                )
+                .implementationPath(WolfPKCS11Lib.getResource())
                 .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_DERIVE, true)
                 .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_SIGN, true)
                 .attribute(KeyObject.GENERATE_CKO_PRIVATE_KEY, CKA.CKA_EXTRACTABLE, true)

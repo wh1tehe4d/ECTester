@@ -167,7 +167,7 @@ public class ECTesterStandalone {
                     SoftHSMv2LibOPENSSL.class,
                     // SoftHSMv2LibBOTAN.class,
                     WolfPKCS11Lib.class,
-                    TomcryptLib.class,
+                    /*TomcryptLib.class,
                     BotanLib.class,
                     CryptoppLib.class,
                     OpensslLib.class,
@@ -178,7 +178,7 @@ public class ECTesterStandalone {
                     MbedTLSLib.class,
                     IppcpLib.class,
                     NettleLib.class,
-                    LibresslLib.class
+                    LibresslLib.class*/
             };
             for (Class<?> c : libClasses) {
                 try {
@@ -1146,7 +1146,7 @@ public class ECTesterStandalone {
                         System.err.println("Error creating the default SunPKCS11 config.");
                         return false;
                     }
-                    configPath = PKCS11ConfigWriter.configPath;
+                    configPath = PKCS11ConfigWriter.getConfigPath();
                 } else {
                     configPath = cli.getOptionValue("pkcs11-cfg");
                 }
