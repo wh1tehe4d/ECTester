@@ -55,7 +55,7 @@ public abstract class GenericPKCS11Library extends ProviderECLibrary {
             KeyStore.getInstance("PKCS11", this.provider).load(null, this.PIN);
         } catch (Exception e) {
             System.err.println(e.getMessage());
-            System.err.println(Arrays.toString(e.getCause().getStackTrace()));
+            e.printStackTrace();
             initialized = false;
         }
 

@@ -51,11 +51,11 @@ writeShellApplication {
 
   text = ''
     SOFTHSM2_TEMPDIR=$(mktemp --directory)
-    SOFTHSM2_CONF="$SOFTHSM2_TEMPDIR"/softhsm2.conf
+    SOFTHSM2_CONF="$HOME/.local/share/ECTesterStandalone/SoftHSMv2-OPENSSL.conf"
     SOFTHSM2_LIB="${softhsmPkg}/lib/softhsm/libsofthsm2.so"
     PIN=1234
 
-    export SOFTHSM2_CONF SOFTHSM2_LIB PIN
+    export SOFTHSM2_CONF SOFTHSM2_LIB PIN ECTESTER_NIX
 
     cat <<EOF > "$SOFTHSM2_TEMPDIR"/softhsm2.conf
     directories.tokendir = $SOFTHSM2_TEMPDIR/tokens
@@ -75,8 +75,6 @@ writeShellApplication {
     library.reset_on_fork = false
     EOF
 
-    mkdir --parents "$SOFTHSM2_TEMPDIR"/tokens
-    softhsm2-util --init-token --slot 0 --label "ECTester" --pin "$PIN" --so-pin "$PIN" > /dev/null
 
     ${ectester.outPath}/bin/ECTesterStandalone "$@"
     rm --recursive --force "$SOFTHSM2_TEMPDIR"

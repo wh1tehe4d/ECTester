@@ -167,7 +167,7 @@ public class ECTesterStandalone {
                     SoftHSMv2LibOPENSSL.class,
                     // SoftHSMv2LibBOTAN.class,
                     WolfPKCS11Lib.class,
-                    /*TomcryptLib.class,
+                    TomcryptLib.class,
                     BotanLib.class,
                     CryptoppLib.class,
                     OpensslLib.class,
@@ -178,7 +178,7 @@ public class ECTesterStandalone {
                     MbedTLSLib.class,
                     IppcpLib.class,
                     NettleLib.class,
-                    LibresslLib.class*/
+                    LibresslLib.class
             };
             for (Class<?> c : libClasses) {
                 try {
@@ -385,7 +385,7 @@ public class ECTesterStandalone {
                 }
 
                 try {
-                    if (!lib.initialize()) {
+                    if (!lib.isInitialized() && !lib.initialize()) {
                         continue;
                     }
                 } catch (Exception ex) {

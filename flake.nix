@@ -574,7 +574,7 @@
 
         softhsmBuilder = { }: pkgs.callPackage ./nix/softhsm2 {
           softhsm = unstablePkgs.softhsm;
-          ectester = buildECTesterStandalone { };
+          ectester = buildECTesterStandalone { softhsm = unstablePkgs.softhsm; };
         };
 
         buildECTesterStandalone =
@@ -626,6 +626,7 @@
               version = null;
               hash = null;
             },
+            softhsm
           }:
           (
             let
@@ -657,6 +658,7 @@
               src = ./.;
 
               jniLibsPath = "standalone/src/main/resources/cz/crcs/ectester/standalone/libs/jni/";
+              pkcs11LibsPath = "standalone/src/main/resources/cz/crcs/ectester/standalone/libs/pkcs11/";
 
               # FIXME add conditionally libs using map?
               preConfigure = pkgs.lib.concatLines [
@@ -670,6 +672,7 @@
                 (if ippcp.version != null then "cp ${ippcpShim.out}/lib/* ${jniLibsPath}" else "")
                 (if nettle.version != null then "cp ${nettleShim.out}/lib/* ${jniLibsPath}" else "")
                 (if libressl.version != null then "cp ${libresslShim.out}/lib/* ${jniLibsPath}" else "")
+                (if softhsm != null then "cp ${softhsm.out}/lib/softhsm/* ${pkcs11LibsPath}SoftHSMv2/SoftHSMv2-OPENSSL/" else "")
                 ''
                   cp ${wolfcryptjni}/lib/* ${jniLibsPath}
                   cp ${commonLibs}/lib/* ${jniLibsPath}

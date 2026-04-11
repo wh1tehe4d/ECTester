@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class PKCS11ConfigWriter {
 
@@ -30,12 +29,11 @@ public class PKCS11ConfigWriter {
         try (FileWriter fw = new FileWriter(path)) {
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(config.export());
-            bw.close();
+            bw.flush();
             return true;
         } catch (IOException e) {
             System.err.println(e.getMessage());
-            // TODO print stacktrace line by line
-            System.err.println(Arrays.toString(e.getStackTrace()));
+            e.printStackTrace();
             return false;
         }
     }
