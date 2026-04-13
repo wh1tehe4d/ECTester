@@ -165,6 +165,7 @@ public class ECTesterStandalone {
                     SunECLib.class,
                     BouncyCastleLib.class,
                     SoftHSMv2LibOPENSSL.class,
+                    // BOTAN SoftHSM backend is currently not supported
                     // SoftHSMv2LibBOTAN.class,
                     WolfPKCS11Lib.class,
                     TomcryptLib.class,
@@ -359,15 +360,19 @@ public class ECTesterStandalone {
         opts.addOption(Option.builder("h").longOpt("help").desc("Print help(about <command>).").hasArg().argName("command").optionalArg(true).build());
         opts.addOption(Option.builder("C").longOpt("color").desc("Print stuff with color, requires ANSI terminal.").build());
         opts.addOption(Option.builder().longOpt("no-preload").desc("Do not use LD_PRELOAD.").build());
-        opts.addOption(Option.builder().longOpt("pkcs11").desc("Run the specified action on the following PKCS#11 implementation.")
-                .numberOfArgs(2)
-                .argName("implementationPath;implementationName").valueSeparator(';')
+        opts.addOption(Option.builder().longOpt("pkcs11-name").desc("Specify PKCS#11 implementation name.")
+                .hasArg()
+                .argName("implementationName")
+                .build());
+        opts.addOption(Option.builder().longOpt("pkcs11-path").desc("Run the specified action on the following PKCS#11 path.")
+                .hasArg()
+                .argName("implementationPath")
                 .build());
         opts.addOption(Option.builder().longOpt("pkcs11-login")
                 .desc("Specify the PIN used for the PKCS#11 implementation.")
                 .hasArg().argName("PIN").build());
         opts.addOption(Option.builder().longOpt("pkcs11-cfg")
-                        .desc("Specify the SunPKCS11 config file. (ignores the first arg of --pkcs11)")
+                        .desc("Specify the SunPKCS11 config file. (ignores the --pkcs-<> args)")
                 .hasArg().argName("configPath").build());
         return optParser.parse(opts, args);
     }
@@ -1093,8 +1098,8 @@ public class ECTesterStandalone {
             String next = cli.getNextName();
 
             if (cli.isNext("generate") || cli.isNext("export") || cli.isNext("ecdh") || cli.isNext("ecdsa") || cli.isNext("test")) {
-                if (!cli.hasArg(-1) && !cli.hasOption("pkcs11")) {
-                    System.err.println("Missing library name argument or PKCS#11 implementation (--pkcs11 option).");
+                if (!cli.hasArg(-1) && !cli.hasOption("pkcs11-cfg") && (!cli.hasOption("pkcs11-name") || !cli.hasOption("pkcs11-path"))) {
+                    System.err.println("Missing library name argument or PKCS#11 implementation (--pkcs11-name and --pkcs11-path options).");
                     return false;
                 }
 
@@ -1112,7 +1117,7 @@ public class ECTesterStandalone {
                 }
             }
 
-            if (!cli.isNext("list-data") && !cli.isNext("list-suites") && !cli.isNext("list-types") && !cli.hasOption("pkcs11")) {
+            if (!cli.isNext("list-data") && !cli.isNext("list-suites") && !cli.isNext("list-types") && !cli.hasOption("pkcs11-path") && !cli.hasOption("pkcs11-cfg")) {
                 String libraryName = cli.getArg(-1);
                 if (libraryName != null) {
                     List<ProviderECLibrary> matchedLibs = new LinkedList<>();
@@ -1137,11 +1142,13 @@ public class ECTesterStandalone {
                         }
                     }
                 }
-            } else if (cli.hasOption("pkcs11")) {
-                String[] pkcs11Arguments = cli.getOptionValues("pkcs11");
+            } else if (cli.hasOption("pkcs11-path") || cli.hasOption("pkcs11-cfg")) {
                 String configPath;
+                String name = null;
                 if (!cli.hasOption("pkcs11-cfg")) {
-                    PKCS11Config config = PKCS11Config.defaultConfig(pkcs11Arguments[1], pkcs11Arguments[0]);
+                    name = cli.getOptionValue("pkcs11-name");
+                    PKCS11Config config = PKCS11Config.defaultConfig(cli.getOptionValue("pkcs11-name"),
+                            cli.getOptionValue("pkcs11-path"));
                     if (!PKCS11ConfigWriter.write(config)) {
                         System.err.println("Error creating the default SunPKCS11 config.");
                         return false;
@@ -1152,9 +1159,9 @@ public class ECTesterStandalone {
                 }
 
 
-                selected = new PKCS11Lib(pkcs11Arguments[1],
+                selected = new PKCS11Lib(name,
                         configPath,
-                        cli.hasOption("pkcs11-login") ? cli.getOptionValue("pkcs11-login") : System.getenv("PKCS11_PIN"));
+                        cli.hasOption("pkcs11-login") ? cli.getOptionValue("pkcs11-login") : null);
                 try {
                     selected.initialize();
                 } catch (Exception ex) {
