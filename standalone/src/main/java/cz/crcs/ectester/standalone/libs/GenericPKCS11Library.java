@@ -22,7 +22,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
  */
 public abstract class GenericPKCS11Library extends ProviderECLibrary {
 
-    private final char[] PIN;
+    private final String PIN;
 
     private String providerConfigPath;
 
@@ -32,7 +32,11 @@ public abstract class GenericPKCS11Library extends ProviderECLibrary {
 
     public GenericPKCS11Library(String name, String PIN) {
         super(name, Security.getProvider("SunPKCS11"));
-        this.PIN = PIN != null ? PIN.toCharArray() : null;
+        this.PIN = PIN;
+    }
+
+    public String getPIN() {
+        return this.PIN;
     }
 
     public void setProviderConfigPath(String providerConfigPath) {
@@ -52,7 +56,7 @@ public abstract class GenericPKCS11Library extends ProviderECLibrary {
             if (!initialized || this.PIN == null) return initialized;
 
             // PKCS#11 login procedure
-            KeyStore.getInstance("PKCS11", this.provider).load(null, this.PIN);
+            KeyStore.getInstance("PKCS11", this.provider).load(null, this.PIN.toCharArray());
         } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();

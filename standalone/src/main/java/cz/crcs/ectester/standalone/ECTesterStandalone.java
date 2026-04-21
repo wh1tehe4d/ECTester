@@ -1098,7 +1098,7 @@ public class ECTesterStandalone {
             String next = cli.getNextName();
 
             if (cli.isNext("generate") || cli.isNext("export") || cli.isNext("ecdh") || cli.isNext("ecdsa") || cli.isNext("test")) {
-                if (!cli.hasArg(-1) && !cli.hasOption("pkcs11-cfg") && (!cli.hasOption("pkcs11-name") || !cli.hasOption("pkcs11-path"))) {
+                if (!cli.hasArg(-1) && !cli.hasOption("pkcs11-cfg") &&  !cli.hasOption("pkcs11-path")) {
                     System.err.println("Missing library name argument or PKCS#11 implementation (--pkcs11-name and --pkcs11-path options).");
                     return false;
                 }

@@ -46,7 +46,8 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
     private final Path confPath;
 
     public SoftHSMv2Lib(Backend backend) {
-        super("SoftHSMv2-" + backend, "1234");
+        super("SoftHSMv2-" + backend,
+                System.getenv("SOFTHSM2_PIN") != null ? System.getenv("SOFTHSM2_PIN") : "1234");
         this.backend = backend;
         this.confPath = FileUtil.getLibDir().resolve(String.format("SoftHSMv2-%s.conf", this.backend));
     }
@@ -67,8 +68,7 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
         try {
             config = PKCS11Config.SoftHSMv2Config(this.backend);
         } catch (IllegalArgumentException e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
+            // happens in case config path was not set and here that can happen only if IOException happened
             return false;
         }
 
@@ -82,7 +82,9 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
     }
 
     private static String resource(Backend backend) {
-        return String.format("SoftHSMv2/SoftHSMv2-%s/libsofthsm2." + FileUtil.getLibSuffix(), backend);
+        return Paths.get("SoftHSMv2",
+                String.format("SoftHSMv2-%s", backend),
+                "libsofthsm2." + FileUtil.getLibSuffix()).toString();
     }
 
 
@@ -119,7 +121,7 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
         try {
             // create temp directory in which we will store cryptokis
             Path tokenDir = Files.createTempDirectory(String.format("ECTester-SoftHSMv2-%s-Tokens", this.backend));
-            (new File(tokenDir.toString())).deleteOnExit();
+            tokenDir.toFile().deleteOnExit();
             this.tokenDir = tokenDir.toString();
 
             // write the softhsm2.conf file with the temp directory as token backend
@@ -129,16 +131,18 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
             ProcessBuilder pb = new ProcessBuilder("softhsm2-util",
                     "--module", SoftHSMv2Lib.getResource(this.backend), "--init-token", "--label",
                     String.format("ECTester-SoftHSMv2-%s", this.backend),
-                    "--slot", "0", "--so-pin", "1234", "--pin", "1234")
+                    "--slot", "0", "--so-pin", this.getPIN(), "--pin", this.getPIN())
                     .redirectOutput(ProcessBuilder.Redirect.DISCARD)
                     .redirectError(ProcessBuilder.Redirect.INHERIT);
 
             Process createToken = pb.start();
             int exitStatus = createToken.waitFor();
             if (exitStatus != 0) throw new RuntimeException("Failed to initialize token, stderr from process was inherited.");
+
             return true;
 
-        } catch (InterruptedException | IOException e) {
+        } catch (InterruptedException | IOException | RuntimeException e) {
+            System.err.println(e);
             System.err.println(e.getMessage());
             e.printStackTrace();
             return false;

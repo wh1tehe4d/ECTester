@@ -11,7 +11,7 @@ public class PKCS11Util {
 
     public static String getAbsoluteResourcePath(String resourcePath) {
         try {
-            File tmp = File.createTempFile("ECTester-pkcs11-lib-", ".so");
+            File tmp = File.createTempFile("ECTester-pkcs11-lib-", FileUtil.getLibSuffix());
             tmp.deleteOnExit();
             if (FileUtil.write(PKCS11_RESOURCES_PATH + resourcePath, tmp.toPath())) {
                 return tmp.getAbsolutePath();

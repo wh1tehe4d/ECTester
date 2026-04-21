@@ -25,6 +25,6 @@ public class PKCS11Lib extends GenericPKCS11Library {
         String[] names = this.provider.getName().split("-");
         return Arrays.stream(names)
                 .filter(name -> !name.equals("SunPKCS11"))
-                .reduce("", (s, s2) -> s + s2);
+                .reduce("", (s, s2) -> s + "-" + s2);
     }
 }

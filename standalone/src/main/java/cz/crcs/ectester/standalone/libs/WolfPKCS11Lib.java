@@ -5,6 +5,12 @@ import cz.crcs.ectester.standalone.util.PKCS11Config;
 import cz.crcs.ectester.standalone.util.PKCS11ConfigWriter;
 import cz.crcs.ectester.standalone.util.PKCS11Util;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class WolfPKCS11Lib extends GenericPKCS11Library {
 
     public WolfPKCS11Lib() {
@@ -16,7 +22,23 @@ public class WolfPKCS11Lib extends GenericPKCS11Library {
     }
 
     private static String resource() {
-        return "wolfPKCS11/libwolfpkcs11." + FileUtil.getLibSuffix();
+        return Paths.get("wolfPKCS11", "libwolfpkcs11." + FileUtil.getLibSuffix()).toString();
+    }
+
+    private boolean initToken() {
+        try {
+            Path tokenDir = Files.createTempDirectory("ECTester-wolfPKCS11-token");
+            tokenDir.toFile().deleteOnExit();
+
+            Path symLink = Files.createSymbolicLink(FileUtil.getAppData().resolve("ECTester-wolfPKCS11-token"), tokenDir);
+            symLink.toFile().deleteOnExit();
+
+            return true;
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
@@ -31,6 +53,6 @@ public class WolfPKCS11Lib extends GenericPKCS11Library {
 
         boolean success = PKCS11ConfigWriter.write(config);
         this.setProviderConfigPath(PKCS11ConfigWriter.getConfigPath());
-        return success && super.initialize();
+        return success && this.initToken() && super.initialize();
     }
 }
