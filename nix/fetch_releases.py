@@ -24,8 +24,8 @@ def get_source_hash(url, unpack=False):
     digest_nixbase32 = sp.check_output(cmd, stderr=sp.DEVNULL).strip()
     digest_sri = (
         sp.check_output(
-            ["nix", "hash", "to-sri", "--type", digest_type, digest_nixbase32.decode()],
-            stderr=sp.DEVNULL,
+            ["nix", "--extra-experimental-features", "nix-command", "hash", "to-sri", "--type",
+            digest_type, digest_nixbase32.decode()], stderr=sp.DEVNULL
         )
         .strip()
         .decode()
