@@ -1,5 +1,6 @@
 package cz.crcs.ectester.standalone.libs;
 
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.Security;
 import java.security.KeyPairGenerator;
@@ -65,6 +66,8 @@ public abstract class GenericPKCS11Library extends ProviderECLibrary {
 
         return initialized;
     }
+
+    public abstract void destroy() throws IOException;
 
     @Override
     public Set<String> getCurves() {

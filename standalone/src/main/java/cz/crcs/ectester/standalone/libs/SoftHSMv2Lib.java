@@ -41,7 +41,7 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
 
     private final Backend backend;
 
-    private String tokenDir;
+    private Path tokenDir;
 
     private final Path confPath;
 
@@ -107,7 +107,7 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
     private boolean writeConfig(String path) {
         try (FileWriter fw = new FileWriter(path)) {
             BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(String.format(SoftHSMv2Lib.config, this.tokenDir));
+            bw.write(String.format(SoftHSMv2Lib.config, this.tokenDir.toString()));
             bw.flush();
             return true;
         } catch (Exception e) {
@@ -120,9 +120,8 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
     private boolean initToken() {
         try {
             // create temp directory in which we will store cryptokis
-            Path tokenDir = Files.createTempDirectory(String.format("ECTester-SoftHSMv2-%s-Tokens", this.backend));
-            tokenDir.toFile().deleteOnExit();
-            this.tokenDir = tokenDir.toString();
+            this.tokenDir = Files.createTempDirectory(String.format("ECTester-SoftHSMv2-%s-Tokens", this.backend));
+            this.tokenDir.toFile().deleteOnExit();
 
             // write the softhsm2.conf file with the temp directory as token backend
             if (!this.writeConfig()) return false;
@@ -149,8 +148,35 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
         }
     }
 
+    @Override
+    public void destroy() throws IOException {
+        if (this.tokenDir.toFile().listFiles() == null) return;
+
+        File token = this.tokenDir.toFile().listFiles()[0];
+        for (File file : Objects.requireNonNull(token.listFiles())) {
+            if (!file.delete()) {
+                throw new IOException(String.format("Cannot delete contents of the generated token for SoftHSMv2-%s",
+                        this.backend));
+            }
+        }
+
+        if (!token.delete()) {
+            throw new IOException(String.format("Cannot delete contents of the generated token for SoftHSMv2-%s",
+                    this.backend));
+        }
+    }
+
     public enum Backend {
         OPENSSL,
-        BOTAN
+        BOTAN;
+
+
+        @Override
+        public String toString() {
+            if (this == OPENSSL)
+                return "OSSL";
+
+            return "BTN";
+        }
     }
 }

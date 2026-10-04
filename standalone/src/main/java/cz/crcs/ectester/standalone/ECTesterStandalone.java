@@ -225,6 +225,18 @@ public class ECTesterStandalone {
         } catch (InvalidKeyException | SignatureException e) {
             e.printStackTrace();
         }
+
+        // destroy any artifacts left behind by the PKCS#11 libs
+        for (ProviderECLibrary library : libs) {
+            if (library instanceof GenericPKCS11Library && library.isInitialized()) {
+                try {
+                    ((GenericPKCS11Library) library).destroy();
+                } catch (IOException e) {
+                    System.err.println(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private TreeCommandLine parseArgs(String[] args) throws ParseException {

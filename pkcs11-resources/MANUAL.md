@@ -26,14 +26,14 @@ If not provided, ECTester assumes the implementation does not require logging in
 ### 2.1 SoftHSMv2-OPENSSL
 
 * Compiled using OpenSSL backend
-* Assumes `SOFTHSM2_CONF` is set to `~/.local/share/ECTesterStandalone/SoftHSMv2-OPENSSL.conf` or your own SoftHSMv2 configuration.
+* Assumes `SOFTHSM2_CONF` is set to `~/.local/share/ECTesterStandalone/SoftHSMv2-OSSL.conf` or your own SoftHSMv2 configuration.
 In that case we assume you manage your own cryptoki, and therefore you need to set `SOFTHSM2_PIN` to PIN of the initialized cryptoki.
 * If `SOFTHSM2_CONF` is set to our location, ECTester initializes a fresh cryptoki for each run, to izolate test runs
 
 ### 2.2 SoftHSMv2-BOTAN
 
 * Compiled using Botan backend
-* Assumes `SOFTHSM2_CONF` is set to `~/.local/share/ECTesterStandalone/SoftHSMv2-OPENSSL.conf` or your own SoftHSMv2 configuration.
+* Assumes `SOFTHSM2_CONF` is set to `~/.local/share/ECTesterStandalone/SoftHSMv2-BTN.conf` or your own SoftHSMv2 configuration.
   In that case we assume you manage your own cryptoki, and therefore you need to set `SOFTHSM2_PIN` to PIN of the initialized cryptoki.
 * If `SOFTHSM2_CONF` is set to our location, ECTester initializes a fresh cryptoki for each run, to izolate test runs
 * Botan backend SEG faults after our testing and creates an error log (even after being just initialized, therefore is commented out from the libs in source code, to prevent the SEG fault after just listing libs)
@@ -44,7 +44,7 @@ In that case we assume you manage your own cryptoki, and therefore you need to s
 
 * Compiled using WolfSSL backend
 * Pre-configured token, no PIN required
-* Assumes `WOLFPKCS11_TOKEN_PATH` is set to `~/.local/share/ECTesterStandalone/wolfpkcs11-token`
+* Assumes `WOLFPKCS11_TOKEN_PATH` is set to `~/.local/share/ECTesterStandalone/ECTester-wolfpkcs11-token`
 * ECTester creates a fresh temporary directory for the token, to isolate test runs
 * Has library-side hardcoded limit of 64 objects, therefore after some testing it starts crashing because it is not able to generate any new keys
 * Solution to this is to delete contents of `WOLFPKCS11_TOKEN_PATH` and reinit the token using `pkcs11-tool`
