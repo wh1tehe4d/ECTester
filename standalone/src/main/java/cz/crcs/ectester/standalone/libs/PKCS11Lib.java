@@ -1,5 +1,6 @@
 package cz.crcs.ectester.standalone.libs;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class PKCS11Lib extends GenericPKCS11Library {
@@ -27,4 +28,7 @@ public class PKCS11Lib extends GenericPKCS11Library {
                 .filter(name -> !name.equals("SunPKCS11"))
                 .reduce("", (s, s2) -> s + "-" + s2);
     }
+
+    @Override
+    public void destroy() throws IOException {}
 }

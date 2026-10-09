@@ -627,7 +627,10 @@
               version = null;
               hash = null;
             },
-            softhsm
+            softhsm ? {
+              version = null;
+              hash = null;
+            }
           }:
           (
             let
@@ -673,7 +676,7 @@
                 (if ippcp.version != null then "cp ${ippcpShim.out}/lib/* ${jniLibsPath}" else "")
                 (if nettle.version != null then "cp ${nettleShim.out}/lib/* ${jniLibsPath}" else "")
                 (if libressl.version != null then "cp ${libresslShim.out}/lib/* ${jniLibsPath}" else "")
-                (if softhsm != null then "cp ${softhsm.out}/lib/softhsm/* ${pkcs11LibsPath}SoftHSMv2/SoftHSMv2-OPENSSL/" else "")
+                (if softhsm.version != null then "cp ${softhsm.out}/lib/softhsm/* ${pkcs11LibsPath}SoftHSMv2/SoftHSMv2-OSSL/" else "")
                 ''
                   cp ${wolfcryptjni}/lib/* ${jniLibsPath}
                   cp ${commonLibs}/lib/* ${jniLibsPath}

@@ -69,6 +69,7 @@ public abstract class SoftHSMv2Lib extends GenericPKCS11Library {
             config = PKCS11Config.SoftHSMv2Config(this.backend);
         } catch (IllegalArgumentException e) {
             // happens in case config path was not set and here that can happen only if IOException happened
+            System.out.println(e.getMessage());
             return false;
         }
 
