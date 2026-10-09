@@ -51,7 +51,7 @@ writeShellApplication {
 
   text = ''
     SOFTHSM2_TEMPDIR=$(mktemp --directory)
-    SOFTHSM2_CONF="$HOME/.local/share/ECTesterStandalone/SoftHSMv2-OPENSSL.conf"
+    SOFTHSM2_CONF="$HOME/.local/share/ECTesterStandalone/SoftHSMv2-OSSL.conf"
     SOFTHSM2_LIB="${softhsmPkg}/lib/softhsm/libsofthsm2.so"
     PIN=1234
 
@@ -74,7 +74,6 @@ writeShellApplication {
     # If the library should reset the state on fork
     library.reset_on_fork = false
     EOF
-
 
     ${ectester.outPath}/bin/ECTesterStandalone "$@"
     rm --recursive --force "$SOFTHSM2_TEMPDIR"

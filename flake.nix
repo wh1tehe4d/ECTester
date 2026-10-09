@@ -627,10 +627,7 @@
               version = null;
               hash = null;
             },
-            softhsm ? {
-              version = null;
-              hash = null;
-            }
+            softhsm ? null
           }:
           (
             let
@@ -676,7 +673,7 @@
                 (if ippcp.version != null then "cp ${ippcpShim.out}/lib/* ${jniLibsPath}" else "")
                 (if nettle.version != null then "cp ${nettleShim.out}/lib/* ${jniLibsPath}" else "")
                 (if libressl.version != null then "cp ${libresslShim.out}/lib/* ${jniLibsPath}" else "")
-                (if softhsm.version != null then "cp ${softhsm.out}/lib/softhsm/* ${pkcs11LibsPath}SoftHSMv2/SoftHSMv2-OSSL/" else "")
+                (if softhsm != null then "cp ${softhsm.out}/lib/softhsm/* ${pkcs11LibsPath}SoftHSMv2/SoftHSMv2-OSSL/" else "")
                 ''
                   cp ${wolfcryptjni}/lib/* ${jniLibsPath}
                   cp ${commonLibs}/lib/* ${jniLibsPath}
@@ -790,6 +787,17 @@
             default = function { ${libName} = firstVersion; };
           };
 
+        getVersionForTest =
+          { libName }:
+          let
+            versions = builtins.fromJSON (
+              builtins.readFile ./nix/${libName}_pkg_versions.json
+            );
+          in
+          function: pkgs.lib.mapAttrs
+            (rev: specs: function { ${libName} = specs; })
+            versions;
+
         loadVersionsForShim =
           { libName, function }:
           let
@@ -805,7 +813,8 @@
         packages = rec {
           default = buildECTesterStandalone {
             # FIXME tomcrypt is missing!
-            botan = defaultVersion "botan";
+            # botan2 is EOL
+            # botan = defaultVersion "botan";
             cryptopp = defaultVersion "cryptopp";
             openssl = defaultVersion "openssl";
             boringssl = defaultVersion "boringssl";
@@ -815,6 +824,15 @@
             nettle = defaultVersion "nettle";
             libressl = defaultVersion "libressl";
           };
+          softhsmTest = getVersionForTest { libName = "openssl"; } ( { openssl }:
+            pkgs.callPackage ./nix/softhsm2 {
+              softhsm = unstablePkgs.softhsm;
+              ectester = buildECTesterStandalone {
+                softhsm = unstablePkgs.softhsm;
+                inherit openssl;
+              };
+            }
+          );
           tomcrypt = loadVersions {
             libName = "tomcrypt";
             function = buildECTesterStandalone;
