@@ -25,6 +25,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.junit-pioneer:junit-pioneer:2.3.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    implementation("io.cyphera:kmip:0.0.1-alpha.1")
+    implementation("net.java.dev.jna:jna-platform:5.15.0")
 }
 
 java {
